@@ -1,0 +1,176 @@
+#include <stdlib.h>
+#include <iostream>
+#include <cmath>
+#include <ctime>
+
+using namespace std;
+
+#define N 20 // amount point
+#define K 2 // amount center
+
+class Point{
+public:
+    double x;
+    double y;
+    int type=0;
+
+    Point(){
+        x=0;
+        y=0;
+    }
+
+    Point(double _x, double _y){//standart construct
+        x=_x;
+        y=_y;
+    }
+
+
+
+};
+void put_in(Point* arr,double _arr[2][N], int len){
+    for(int i=0; i<len; i++){
+        arr[i].x=_arr[0][i];
+        arr[i].y=_arr[1][i];
+    }
+
+}
+
+void random_point(Point* arr, int len){
+    srand(time(0));
+    for(int i=0; i<len; i++){
+        arr[i].x=rand()%10;
+        arr[i].y=rand()%10;
+
+    }
+}
+
+void print_p(Point* arr, double len){
+    for(int i=0; i<len; i++){
+        cout<<"("<<arr[i].x<<", "<<arr[i].y<<") type: "<<arr[i].type<<" ";
+    }
+    cout<<endl;
+}
+
+double distance_p(Point a, Point b){
+    return sqrt( pow((a.x-b.x),2) + pow((a.y-b.y),2) );
+}
+
+int HowMach_type(Point* arr,int len, int _type){
+    int k=0;
+    for(int i=0; i<len; i++){
+        if(arr[i].type == _type){
+            k++;
+        }
+    }
+    return k;
+}
+
+Point* claster(Point* arr, Point* center, int len_p, int len_c){
+    Point* n_c;
+    n_c=new Point[len_c];
+    cout<<"I in claster!"<<endl;
+    //first step, take point to center
+        for(int i=0; i<len_c; i++){//сколько центров - столько и точек, берем последовательно
+            center[i].x=arr[i].x;
+            center[i].y=arr[i].y;
+        }
+        cout<<"Before first step, i have center array:"<<endl;
+        print_p(center,K);
+
+    while(1){
+        cout<<"I in while"<<endl;
+
+        //second step сейчас только для двух центров!!!!
+        //double max_p=distance_p(center[0], arr[i]);
+
+
+        for(int i=0; i<len_p; i++){//перебор всех точек выборки
+            double min_p=distance_p(center[0], arr[i]);
+            int temp=0;
+            for(int j=0; j<len_c; j++){//перебор всех центров
+                if(min_p > distance_p(center[j], arr[i]) ){//поиск минимального расстояния до одного из центров
+                    min_p=distance_p(center[j], arr[i]);
+                    temp=j;//запоминаем индекс центра для этой точки
+                }
+            }
+            arr[i].type=temp+1;//задаем тип кластера для точки, +1 т.к. кластеры нумерую с 1
+            cout<<"I find type: arr["<<i<<"].type= "<<temp+1<<endl;
+        }
+
+
+
+//        for(int i=0; i< len_p; i++){
+//            if(distance_p(center[0], arr[i]) <= distance_p(center[1], arr[i]) ){
+//                arr[i].type=1;
+//            }
+//            else
+//            {
+//                arr[i].type=2;
+//            }
+//        }
+
+        //third step
+
+        cout<<endl<<endl<<"I in third step!"<<endl;
+        double sum_x=0;
+        double sum_y=0;
+
+        for (int i=0; i<len_c; i++){
+            double temp= (1.0/double(HowMach_type(arr,len_p,i+1)) );
+            cout<<"in classter "<<i+1<<" : "<<HowMach_type(arr,len_p,i+1)<<endl;
+            cout<<"My temp for c["<<i<<"] = "<< temp<<endl;
+            for(int j=0; j<len_p; j++){
+                if(arr[j].type == i+1){
+                       sum_x+=arr[j].x;
+                       sum_y+=arr[j].y;
+                }
+                //center[i].x=sum_x*temp;
+                //center[i].y=sum_y*temp;
+                n_c[i].x=sum_x*temp;
+                n_c[i].y=sum_y*temp;
+            }
+        }
+
+        bool flag=1;
+        for(int i=0; i<len_c; i++){
+            if( (center[i].x != n_c[i].x)  && (center[i].y != n_c[i].y)){
+                flag=0;
+            }
+        }
+        if(flag){
+            return n_c;
+        }
+
+        for(int i=0;i<len_c;i++){
+            center[i]=n_c[i];
+        }
+    }
+
+
+}
+
+
+int main(){
+    Point* a;
+    a=new Point[N];
+
+    Point* center;
+    center=new Point[K];
+
+    double test[2][N]={ {0, 1, 0, 1, 2, 1, 2, 3, 6, 7, 8, 6, 7, 8, 9, 7, 8, 9, 8, 9},
+                        {0, 0, 1, 1, 1, 2, 2, 2, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9}   };
+
+    //random_point(a,N);
+
+    put_in(a,test,N);
+    print_p(a,N);
+
+    cout<<endl<<endl<<"Finish:";
+   print_p( claster(a, center, N, K), K );
+   //claster(a, center, N, K);
+   //print_p(a, N);
+
+
+
+return 1;
+}
